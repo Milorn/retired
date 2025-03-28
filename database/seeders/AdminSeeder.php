@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserRole;
+use App\Enums\UserType;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -18,7 +18,7 @@ class AdminSeeder extends Seeder
         ], [
             'name' => 'Admin',
             'password' => 'retired@2025',
-            'role' => UserRole::Admin,
+            'type' => UserType::Admin,
         ]);
     }
 }

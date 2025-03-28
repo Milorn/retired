@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\UserRole;
+use App\Enums\UserType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -20,7 +20,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'role' => UserRole::class,
+            'type' => UserType::class,
             'password' => 'hashed',
         ];
     }

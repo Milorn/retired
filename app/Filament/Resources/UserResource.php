@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\UserRole;
+use App\Enums\UserType;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms\Components\Section;
@@ -37,20 +37,23 @@ class UserResource extends Resource
                             ->label('Nom')
                             ->placeholder('Nom')
                             ->required(),
-                        Select::make('role')
-                            ->label('Rôle')
-                            ->options(UserRole::class)
+                        Select::make('type')
+                            ->label('Type')
+                            ->options(UserType::class)
+                            ->disabledOn('edit')
                             ->required(),
                         TextInput::make('email')
                             ->label('Email')
                             ->placeholder('Email')
-                            ->required(),
+                            ->required()
+                            ->default(''),
                         TextInput::make('password')
                             ->label('Mot de passe')
                             ->placeholder('••••••••')
                             ->password()
                             ->revealable()
-                            ->required(),
+                            ->required()
+                            ->autocomplete(false),
                     ]),
             ]);
     }
@@ -67,8 +70,8 @@ class UserResource extends Resource
                     ->label('Email')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('role')
-                    ->label('Role')
+                TextColumn::make('type')
+                    ->label('Type')
                     ->searchable()
                     ->sortable()
                     ->badge(),
@@ -84,9 +87,9 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('role')
-                    ->label('Role')
-                    ->options(UserRole::class)
+                SelectFilter::make('type')
+                    ->label('Type')
+                    ->options(UserType::class)
                     ->multiple(),
             ])
             ->actions([
@@ -97,7 +100,7 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])->modifyQueryUsing(fn (Builder $query) => $query->where('role', '!=', UserRole::Admin));
+            ])->modifyQueryUsing(fn (Builder $query) => $query->where('type', '!=', UserType::Admin));
     }
 
     public static function getRelations(): array
