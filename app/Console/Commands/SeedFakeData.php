@@ -28,10 +28,16 @@ class SeedFakeData extends Command
      */
     public function handle()
     {
-        $users = User::factory()
-            ->count(20)
+        $agents = User::factory()
+            ->count(5)
+            ->type(UserType::Agent)
             ->create();
 
-        $users->where('type', UserType::Retired->value)->each(fn ($retired) => Claim::factory()->count(3)->for($retired)->create());
+        $retirees = User::factory()
+            ->count(30)
+            ->type(UserType::Retired)
+            ->create();
+
+        $retirees->each(fn ($retired) => Claim::factory()->count(3)->for($retired)->create());
     }
 }

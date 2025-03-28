@@ -26,6 +26,8 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Utilisateurs';
 
+    protected static ?int $navigationSort = 1;
+
     public static function form(Form $form): Form
     {
         return $form
@@ -33,23 +35,19 @@ class UserResource extends Resource
                 Section::make()
                     ->columns(2)
                     ->schema([
-                        TextInput::make('name')
-                            ->label('Nom')
-                            ->placeholder('Nom')
-                            ->required(),
+                        TextInput::make('identifier')
+                            ->label('Identifiant')
+                            ->placeholder('Identifiant')
+                            ->required()
+                            ->unique(ignorable: fn ($record) => $record),
                         Select::make('type')
                             ->label('Type')
                             ->options(UserType::class)
                             ->disabledOn('edit')
                             ->required(),
-                        TextInput::make('email')
-                            ->label('Email')
-                            ->placeholder('Email')
-                            ->required()
-                            ->default(''),
                         TextInput::make('password')
                             ->label('Mot de passe')
-                            ->placeholder('••••••••')
+                            ->placeholder('Mot de passe')
                             ->password()
                             ->revealable()
                             ->required()
@@ -62,12 +60,8 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nom')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('email')
-                    ->label('Email')
+                TextColumn::make('identifier')
+                    ->label('Identifiant')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('type')
