@@ -14,10 +14,9 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         User::firstOrCreate([
-            'email' => 'admin@retired.dz',
+            'identifier' => 'admin',
         ], [
-            'name' => 'Admin',
-            'password' => 'retired@2025',
+            'password' => 'admin@2025',
             'type' => UserType::Admin,
         ]);
     }

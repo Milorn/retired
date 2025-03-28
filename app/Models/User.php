@@ -3,10 +3,11 @@
 namespace App\Models;
 
 use App\Enums\UserType;
+use Filament\Models\Contracts\HasName;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasName
 {
     use HasFactory;
 
@@ -16,6 +17,11 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function getFilamentName(): string
+    {
+        return ucfirst($this->identifier);
+    }
 
     protected function casts(): array
     {
