@@ -18,6 +18,8 @@ class User extends Authenticatable implements HasName
         'remember_token',
     ];
 
+    protected $with = ['retiree', 'agent'];
+
     public function getFilamentName(): string
     {
         return ucfirst($this->identifier);

@@ -3,8 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Enums\ClaimStatus;
+use App\Enums\UserType;
 use App\Filament\Resources\ClaimResource\Pages;
 use App\Models\Claim;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
@@ -15,6 +17,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class ClaimResource extends Resource
 {
@@ -31,7 +34,14 @@ class ClaimResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([]);
+            ->schema([
+
+                Textarea::make('description')
+                    ->label('Déscription')
+                    ->placeholder('Déscription')
+                    ->columnSpanFull()
+                    ->required(),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -41,7 +51,8 @@ class ClaimResource extends Resource
                 TextColumn::make('retiree.full_name')
                     ->label('Retraité')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->hidden(Auth::user()->type == UserType::Retiree),
                 TextColumn::make('status')
                     ->label('État')
                     ->sortable()
@@ -73,7 +84,13 @@ class ClaimResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
+                    ->modalHeading('Détails de la Réclamation')
                     ->extraModalFooterActions(function ($record) {
+
+                        if (Auth::user()->type == UserType::Retiree) {
+                            return [];
+                        }
+
                         $updateStatus = function ($status) use ($record) {
                             $record->update(['status' => $status]);
 
@@ -109,13 +126,19 @@ class ClaimResource extends Resource
                             default => []
                         };
                     }),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->modalHeading('Supprimer la Réclamation ?'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])->modifyQueryUsing(function ($query) {
+                $user = Auth::user();
+                if ($user->type == UserType::Retiree) {
+                    $query->where('retiree_id', $user->retiree->id);
+                }
+            });
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -161,7 +184,6 @@ class ClaimResource extends Resource
     {
         return [
             'index' => Pages\ListClaims::route('/'),
-            'create' => Pages\CreateClaim::route('/create'),
         ];
     }
 }
