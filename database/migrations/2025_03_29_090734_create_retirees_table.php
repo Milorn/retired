@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('birthdate')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
+            $table->double('net_monthly')->nullable();
+            $table->string('pension_status')->nullable();
             $table->timestamps();
         });
     }

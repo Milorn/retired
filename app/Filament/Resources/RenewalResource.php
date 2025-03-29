@@ -34,6 +34,11 @@ class RenewalResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    public static function getNavigationLabel(): string
+    {
+        return Auth::user()->type == UserType::Retiree ? 'Mes Renouvellements' : 'Renouvellements';
+    }
+
     public static function form(Form $form): Form
     {
         return $form

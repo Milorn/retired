@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PensionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +11,10 @@ class Retiree extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'pension_status' => PensionStatus::class,
+    ];
 
     public function user()
     {

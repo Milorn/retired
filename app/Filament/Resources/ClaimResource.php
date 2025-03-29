@@ -29,6 +29,11 @@ class ClaimResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Réclamations';
 
+    public static function getNavigationLabel(): string
+    {
+        return Auth::user()->type == UserType::Retiree ? 'Mes Réclamations' : 'Réclamations';
+    }
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -102,19 +107,19 @@ class ClaimResource extends Resource
                         };
 
                         $treatedAction = Action::make('treat')
-                            ->label('Traiter')
+                            ->label('Traité')
                             ->color('success')
                             ->action(fn () => $updateStatus(ClaimStatus::Treated))
                             ->cancelParentActions();
 
                         $rejectedAction = Action::make('markAsRejected')
-                            ->label('Rejeter')
+                            ->label('En instance')
                             ->color('danger')
                             ->action(fn () => $updateStatus(ClaimStatus::Rejected))
                             ->cancelParentActions();
 
                         $pendingAction = Action::make('markAsPending')
-                            ->label('En attente')
+                            ->label('En cours de traitement')
                             ->color('warning')
                             ->action(fn () => $updateStatus(ClaimStatus::Pending))
                             ->cancelParentActions();

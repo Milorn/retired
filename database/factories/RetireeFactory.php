@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\PensionStatus;
 use App\Enums\UserType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,6 +27,8 @@ class RetireeFactory extends Factory
             'birthdate' => fake()->optional()->date(),
             'email' => fake()->optional()->email(),
             'phone' => fake()->optional()->e164PhoneNumber(),
+            'net_monthly' => fake()->randomNumber(1) * 10000,
+            'pension_status' => fake()->randomElement(PensionStatus::class),
         ];
     }
 }

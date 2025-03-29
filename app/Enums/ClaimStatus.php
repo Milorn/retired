@@ -14,9 +14,9 @@ enum ClaimStatus: string implements HasColor, HasLabel
     public function getLabel(): ?string
     {
         return match ($this) {
-            self::Pending => 'En attente',
-            self::Treated => 'Traitée',
-            self::Rejected => 'Rejetée'
+            self::Pending => 'En cours de traitement',
+            self::Treated => 'Traité',
+            self::Rejected => 'En instance'
         };
     }
 
