@@ -89,7 +89,7 @@ class RenewalResource extends Resource
                             ->downloadable()
                             ->required()
                             ->disabledOn('edit')
-                            ->acceptedFileTypes(['application/pdf']),
+                            ->acceptedFileTypes(['application/pdf', 'image/*']),
                     ]),
             ]);
     }
