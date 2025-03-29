@@ -14,8 +14,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -118,9 +120,58 @@ class RenewalResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->modalHeading('Détails de la demande'),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                    ->modalHeading('Détails de la demande')
+                    ->extraModalFooterActions(function ($record) {
+
+                        if (Auth::user()->type == UserType::Retiree) {
+                            return [];
+                        }
+
+                        $updateStatus = function ($status, $answer = null) use ($record) {
+                            $record->update(['status' => $status, 'answer' => $answer ?? $record->answer]);
+
+                            return Notification::make()
+                                ->success()
+                                ->title('Succés.')
+                                ->body('La demande a été mise à jour avec succés.')
+                                ->send();
+                        };
+
+                        $treatedAction = Action::make('treat')
+                            ->label('Fait')
+                            ->color('success')
+                            ->action(fn () => $updateStatus(RenewalStatus::Done))
+                            ->cancelParentActions();
+
+                        $rejectedAction = Action::make('markAsRejected')
+                            ->label('Rejeter')
+                            ->color('danger')
+                            ->form([
+                                Textarea::make('answer')
+                                    ->label('Motif du refus')
+                                    ->placeholder('Motif du refus')
+                                    ->columnSpanFull()
+                                    ->required(),
+                            ])
+                            ->action(fn ($data) => $updateStatus(RenewalStatus::Rejected, $data['answer']))
+                            ->modalHeading('Rejeter la demande')
+                            ->cancelParentActions();
+
+                        $pendingAction = Action::make('markAsPending')
+                            ->label('En attente')
+                            ->color('warning')
+                            ->action(fn () => $updateStatus(RenewalStatus::Pending))
+                            ->cancelParentActions();
+
+                        return match ($record->status) {
+                            RenewalStatus::Pending => [$treatedAction, $rejectedAction],
+                            RenewalStatus::Done => [$pendingAction, $rejectedAction],
+                            RenewalStatus::Rejected => [$treatedAction, $pendingAction],
+                            default => []
+                        };
+                    }),
+                Tables\Actions\DeleteAction::make()
+                    ->modalHeading('Supprimer la demande'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -188,7 +239,7 @@ class RenewalResource extends Resource
         return [
             'index' => Pages\ListRenewals::route('/'),
             'create' => Pages\CreateRenewal::route('/create'),
-            'edit' => Pages\EditRenewal::route('/{record}/edit'),
+            // 'edit' => Pages\EditRenewal::route('/{record}/edit'),
         ];
     }
 }
