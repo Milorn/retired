@@ -88,7 +88,8 @@ class RenewalResource extends Resource
                             ->previewable(false)
                             ->downloadable()
                             ->required()
-                            ->disabledOn('edit'),
+                            ->disabledOn('edit')
+                            ->acceptedFileTypes(['application/pdf']),
                     ]),
             ]);
     }
@@ -143,7 +144,7 @@ class RenewalResource extends Resource
                         };
 
                         $treatedAction = Action::make('treat')
-                            ->label('Fait')
+                            ->label('Valider')
                             ->color('success')
                             ->action(fn () => $updateStatus(RenewalStatus::Done))
                             ->cancelParentActions();

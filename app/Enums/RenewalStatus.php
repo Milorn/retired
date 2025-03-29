@@ -15,7 +15,7 @@ enum RenewalStatus: string implements HasColor, HasLabel
     {
         return match ($this) {
             self::Pending => 'En attente',
-            self::Done => 'Fait',
+            self::Done => 'Validée',
             self::Rejected => 'Rejetée'
         };
     }
