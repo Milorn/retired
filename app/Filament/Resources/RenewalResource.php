@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Enums\RenewalStatus;
+use App\Enums\UserType;
 use App\Filament\Resources\RenewalResource\Pages;
 use App\Models\Renewal;
 use Filament\Forms\Components\FileUpload;
@@ -11,10 +12,13 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class RenewalResource extends Resource
 {
@@ -40,7 +44,9 @@ class RenewalResource extends Resource
                             ->relationship('retiree', 'full_name')
                             ->preload()
                             ->searchable()
-                            ->required(),
+                            ->required()
+                            ->disabled()
+                            ->visible(Auth::user()->type != UserType::Retiree),
                         TextInput::make('year')
                             ->label('Année')
                             ->placeholder(today()->year)
@@ -48,19 +54,25 @@ class RenewalResource extends Resource
                             ->integer()
                             ->minValue(1970)
                             ->maxValue(today()->year)
-                            ->required(),
+                            ->required()
+                            ->disabled()
+                            ->visible(Auth::user()->type != UserType::Retiree),
                         Select::make('status')
                             ->label('État')
                             ->options(RenewalStatus::class)
-                            ->required(),
+                            ->required()
+                            ->visible(Auth::user()->type != UserType::Retiree)
+                            ->live(),
                         Textarea::make('description')
                             ->label('Description')
                             ->placeholder('description')
                             ->columnSpanFull(),
                         Textarea::make('answer')
-                            ->label('Réponse')
+                            ->label('Motif du refus')
                             ->placeholder('Réponse')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->visible(fn ($operation, $get) => $operation == 'edit' && $get('status') == RenewalStatus::Rejected->value)
+                            ->required(),
                         FileUpload::make('documents')
                             ->label('Documents')
                             ->columnSpanFull()
@@ -68,7 +80,8 @@ class RenewalResource extends Resource
                             ->storeFileNamesIn('documents_names')
                             ->previewable(false)
                             ->downloadable()
-                            ->required(),
+                            ->required()
+                            ->disabledOn('edit'),
                     ]),
             ]);
     }
@@ -80,7 +93,8 @@ class RenewalResource extends Resource
                 TextColumn::make('retiree.full_name')
                     ->label('Retraité')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->visible(Auth::user()->type != UserType::Retiree),
                 TextColumn::make('year')
                     ->label('Année')
                     ->searchable()
@@ -92,7 +106,7 @@ class RenewalResource extends Resource
                     ->searchable()
                     ->badge(),
                 TextColumn::make('created_at')
-                    ->label('Date')
+                    ->label('Date de la demande')
                     ->searchable()
                     ->sortable()
                     ->date('d-m-Y H:i')
@@ -103,6 +117,8 @@ class RenewalResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->modalHeading('Détails de la demande'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -110,6 +126,53 @@ class RenewalResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
+            ])->modifyQueryUsing(function ($query) {
+                if (Auth::user()->type == UserType::Retiree) {
+                    $query->where('retiree_id', Auth::user()->retiree->id);
+                }
+            })->defaultSort('updated_at', 'desc');
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('retiree.full_name')
+                    ->label('Retraité'),
+                TextEntry::make('retiree.number')
+                    ->label('Numéro d\'identification')
+                    ->badge(),
+                TextEntry::make('retiree.birthdate')
+                    ->label('Date de naissance')
+                    ->date('d-m-Y')
+                    ->placeholder('Vide'),
+                TextEntry::make('retiree.email')
+                    ->label('Email')
+                    ->placeholder('Vide'),
+                TextEntry::make('retiree.phone')
+                    ->label('Téléphone')
+                    ->placeholder('Vide'),
+                TextEntry::make('created_at')
+                    ->label('Date de la demande')
+                    ->date('d-m-Y H:i')
+                    ->badge()
+                    ->color('primary'),
+                TextEntry::make('description')
+                    ->columnSpanFull(),
+                TextEntry::make('status')
+                    ->label('État')
+                    ->badge(),
+                TextEntry::make('answer')
+                    ->label('Motif du refus')
+                    ->visible(fn ($record) => $record->status == RenewalStatus::Rejected)
+                    ->columnSpanFull(),
+                TextEntry::make('documents')
+                    ->label('Documents')
+                    ->listWithLineBreaks()
+                    ->formatStateUsing(function ($state, $record) {
+                        return sprintf('<span style="color: oklch(0.623 0.214 259.815)" class="text-xs rounded-md mx-1 font-medium px-2 min-w-[theme(spacing.6)] py-1  bg-custom-50 text-custom-600 ring-custom-600/10 dark:bg-custom-400/10 dark:text-custom-400 dark:ring-custom-400/30"> <a href="%s"  target="_blank">%s</a></span>', '/storage/'.$state, $record->documents_names[$state]);
+                    })->html()
+                    ->columnSpanFull(),
             ]);
     }
 
