@@ -20,26 +20,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('retirees', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('number');
-            $table->string('birthdate')->nullable();
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->timestamps();
-        });
-
-        Schema::create('agents', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->timestamps();
-        });
-
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();

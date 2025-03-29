@@ -17,8 +17,8 @@ class Claim extends Model
         'date' => 'date',
     ];
 
-    public function user()
+    public function retiree()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Retiree::class);
     }
 }

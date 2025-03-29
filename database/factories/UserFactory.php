@@ -26,7 +26,7 @@ class UserFactory extends Factory
         return [
             'identifier' => fake()->unique()->word(),
             'password' => static::$password ??= Hash::make('password'),
-            'type' => fake()->randomElement([UserType::Agent, UserType::Retired]),
+            'type' => fake()->randomElement([UserType::Agent, UserType::Retiree]),
         ];
     }
 

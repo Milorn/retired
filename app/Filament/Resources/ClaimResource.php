@@ -5,13 +5,13 @@ namespace App\Filament\Resources;
 use App\Enums\ClaimStatus;
 use App\Filament\Resources\ClaimResource\Pages;
 use App\Models\Claim;
-use Filament\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -38,7 +38,7 @@ class ClaimResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')
+                TextColumn::make('retiree.full_name')
                     ->label('Retraité')
                     ->searchable()
                     ->sortable(),
@@ -74,7 +74,6 @@ class ClaimResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->extraModalFooterActions(function ($record) {
-
                         $updateStatus = function ($status) use ($record) {
                             $record->update(['status' => $status]);
 
@@ -85,20 +84,23 @@ class ClaimResource extends Resource
                                 ->send();
                         };
 
-                        $treatedAction = Action::make('markAsTreated')
+                        $treatedAction = Action::make('treat')
                             ->label('Traiter')
                             ->color('success')
-                            ->action(fn () => $updateStatus(ClaimStatus::Treated));
+                            ->action(fn () => $updateStatus(ClaimStatus::Treated))
+                            ->cancelParentActions();
 
                         $rejectedAction = Action::make('markAsRejected')
                             ->label('Rejeter')
                             ->color('danger')
-                            ->action(fn () => $updateStatus(ClaimStatus::Rejected));
+                            ->action(fn () => $updateStatus(ClaimStatus::Rejected))
+                            ->cancelParentActions();
 
                         $pendingAction = Action::make('markAsPending')
                             ->label('En attente')
                             ->color('warning')
-                            ->action(fn () => $updateStatus(ClaimStatus::Pending));
+                            ->action(fn () => $updateStatus(ClaimStatus::Pending))
+                            ->cancelParentActions();
 
                         return match ($record->status) {
                             ClaimStatus::Pending => [$treatedAction, $rejectedAction],
@@ -120,15 +122,29 @@ class ClaimResource extends Resource
     {
         return $infolist
             ->schema([
-                TextEntry::make('user.name')
+                TextEntry::make('retiree.full_name')
                     ->label('Retraité'),
-                TextEntry::make('status')
-                    ->label('État')
+                TextEntry::make('retiree.number')
+                    ->label('Numéro d\'identification')
                     ->badge(),
+                TextEntry::make('retiree.birthdate')
+                    ->label('Date de naissance')
+                    ->date('d-m-Y')
+                    ->placeholder('Vide'),
+                TextEntry::make('retiree.email')
+                    ->label('Email')
+                    ->placeholder('Vide'),
+                TextEntry::make('retiree.phone')
+                    ->label('Téléphone')
+                    ->placeholder('Vide'),
                 TextEntry::make('date')
+                    ->label('Date de la réclamation')
                     ->date('d-m-Y H:i')
                     ->badge()
                     ->color('primary'),
+                TextEntry::make('status')
+                    ->label('État')
+                    ->badge(),
                 TextEntry::make('description')
                     ->columnSpanFull(),
             ]);

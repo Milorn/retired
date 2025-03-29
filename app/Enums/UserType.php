@@ -9,14 +9,14 @@ enum UserType: string implements HasColor, HasLabel
 {
     case Admin = 'admin';
     case Agent = 'agent';
-    case Retired = 'retired';
+    case Retiree = 'retiree';
 
     public function getLabel(): ?string
     {
         return match ($this) {
             self::Admin => 'Administrateur',
             self::Agent => 'Agent',
-            self::Retired => 'Retraité'
+            self::Retiree => 'Retraité'
         };
     }
 
@@ -25,7 +25,7 @@ enum UserType: string implements HasColor, HasLabel
         return match ($this) {
             self::Admin => 'primary',
             self::Agent => 'success',
-            self::Retired => 'warning'
+            self::Retiree => 'warning'
         };
     }
 }

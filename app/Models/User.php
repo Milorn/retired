@@ -31,8 +31,8 @@ class User extends Authenticatable implements HasName
         ];
     }
 
-    public function claims()
+    public function retiree()
     {
-        return $this->hasMany(Claim::class);
+        return $this->hasOne(Retiree::class);
     }
 }
