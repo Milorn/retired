@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\PensionStatus;
 use App\Enums\UserType;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
@@ -93,6 +94,15 @@ class UserResource extends Resource
                         TextInput::make('phone')
                             ->label('Phone')
                             ->placeholder('Phone'),
+                        TextInput::make('net_monthly')
+                            ->label('Net mensuel')
+                            ->placeholder('Net mensuel')
+                            ->numeric()
+                            ->integer()
+                            ->minValue(0),
+                        Select::make('pension_status')
+                            ->label('État pension')
+                            ->options(PensionStatus::class),
                     ]),
                 Section::make('Informations de l\'agent')
                     ->columns(2)

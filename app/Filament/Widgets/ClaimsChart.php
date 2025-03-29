@@ -2,13 +2,21 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\UserType;
 use App\Models\Claim;
 use Filament\Widgets\ChartWidget;
 use Flowframe\Trend\Trend;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Auth;
 
-class RetireeChart extends ChartWidget
+class ClaimsChart extends ChartWidget
 {
     protected static ?string $heading = 'Mes Réclamations';
+
+    public function getHeading(): string|Htmlable|null
+    {
+        return Auth::user()->type == UserType::Retiree ? 'Mes Réclamations' : 'Réclamations';
+    }
 
     protected static ?string $pollingInterval = null;
 
@@ -20,10 +28,13 @@ class RetireeChart extends ChartWidget
 
     protected function getData(): array
     {
-        $data = Trend::model(Claim::class)
+        $trend = Auth::user()->type == UserType::Retiree ? Trend::query(Claim::query()->where('retiree_id', Auth::user()->retiree->id)) : Trend::model(Claim::class);
+
+        $data = $trend
+            ->dateColumn('date')
             ->between(
-                start: now()->startOfYear(),
-                end: now()->endOfYear(),
+                start: today()->subYear(),
+                end: today(),
             )
             ->perMonth()
             ->count();
@@ -31,7 +42,7 @@ class RetireeChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Mes Réclamations',
+                    'label' => Auth::user()->type == UserType::Retiree ? 'Mes Réclamations' : 'Réclamations',
                     'data' => $data->map(fn ($value) => $value->aggregate),
                 ],
             ],

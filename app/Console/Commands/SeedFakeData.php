@@ -38,7 +38,7 @@ class SeedFakeData extends Command
             ->create();
 
         $retirees->each(function ($retiree) {
-            Claim::factory()->count(3)->for($retiree)->create();
+            Claim::factory()->count(20)->for($retiree)->create();
             Renewal::factory()->count(3)->for($retiree)->create();
         });
     }

@@ -20,7 +20,7 @@ class ClaimFactory extends Factory
         return [
             'status' => fake()->randomElement(ClaimStatus::class),
             'description' => fake()->paragraph(),
-            'date' => fake()->date(),
+            'date' => fake()->dateTimeBetween('-1 year'),
         ];
     }
 }

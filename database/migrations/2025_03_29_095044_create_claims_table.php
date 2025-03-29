@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('retiree_id')->constrained('retirees')->cascadeOnDelete();
             $table->string('status');
             $table->text('description');
-            $table->string('date');
+            $table->date('date');
             $table->timestamps();
         });
     }
