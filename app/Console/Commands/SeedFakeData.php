@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Agent;
 use App\Models\Claim;
+use App\Models\Renewal;
 use App\Models\Retiree;
 use Illuminate\Console\Command;
 
@@ -36,6 +37,9 @@ class SeedFakeData extends Command
             ->count(50)
             ->create();
 
-        $retirees->each(fn ($retiree) => Claim::factory()->count(3)->for($retiree)->create());
+        $retirees->each(function ($retiree) {
+            Claim::factory()->count(3)->for($retiree)->create();
+            Renewal::factory()->count(3)->for($retiree)->create();
+        });
     }
 }

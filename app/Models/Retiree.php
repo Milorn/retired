@@ -20,4 +20,9 @@ class Retiree extends Model
     {
         return $this->hasMany(Claim::class);
     }
+
+    public function renewals()
+    {
+        return $this->hasMany(Renewal::class);
+    }
 }
