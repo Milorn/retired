@@ -15,7 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
@@ -26,11 +26,17 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $modelLabel = 'Utilisateur';
-
-    protected static ?string $pluralModelLabel = 'Utilisateurs';
-
     protected static ?int $navigationSort = 1;
+
+    public static function getModelLabel(): string
+    {
+        return Auth::user()->type == UserType::Admin ? 'Utilisateur' : 'Retraité';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return Auth::user()->type == UserType::Admin ? 'Utilisateurs' : 'Retraités';
+    }
 
     public static function form(Form $form): Form
     {
@@ -109,6 +115,17 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('retiree.full_name')
+                    ->label('Nom complet')
+                    ->sortable()
+                    ->searchable()
+                    ->visible(Auth::user()->type == UserType::Agent),
+                TextColumn::make('retiree.number')
+                    ->label('N° d\'identification')
+                    ->sortable()
+                    ->searchable()
+                    ->badge()
+                    ->visible(Auth::user()->type == UserType::Agent),
                 TextColumn::make('identifier')
                     ->label('Identifiant')
                     ->searchable()
@@ -147,7 +164,13 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])->modifyQueryUsing(fn (Builder $query) => $query->where('type', '!=', UserType::Admin));
+            ])->modifyQueryUsing(function ($query) {
+                $query->where('type', '!=', UserType::Admin);
+
+                if (Auth::user()->type == UserType::Agent) {
+                    $query->where('type', UserType::Retiree);
+                }
+            });
     }
 
     public static function getRelations(): array
