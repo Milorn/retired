@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\UserType;
+use App\Models\Agent;
 use App\Models\Claim;
 use App\Models\Retiree;
-use App\Models\User;
 use Illuminate\Console\Command;
 
 class SeedFakeData extends Command
@@ -29,13 +28,12 @@ class SeedFakeData extends Command
      */
     public function handle()
     {
-        $agents = User::factory()
-            ->count(5)
-            ->type(UserType::Agent)
+        $agents = Agent::factory()
+            ->count(10)
             ->create();
 
         $retirees = Retiree::factory()
-            ->count(30)
+            ->count(50)
             ->create();
 
         $retirees->each(fn ($retiree) => Claim::factory()->count(3)->for($retiree)->create());

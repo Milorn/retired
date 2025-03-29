@@ -35,4 +35,9 @@ class User extends Authenticatable implements HasName
     {
         return $this->hasOne(Retiree::class);
     }
+
+    public function agent()
+    {
+        return $this->hasOne(Agent::class);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\UserType;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +16,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
@@ -32,7 +35,7 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Section::make()
+                Section::make('Informations de connexion')
                     ->columns(2)
                     ->schema([
                         TextInput::make('identifier')
@@ -44,14 +47,59 @@ class UserResource extends Resource
                             ->label('Type')
                             ->options(UserType::class)
                             ->disabledOn('edit')
-                            ->required(),
+                            ->required()
+                            ->live(),
                         TextInput::make('password')
-                            ->label('Mot de passe')
-                            ->placeholder('Mot de passe')
+                            ->label('Nouveau mot de passe')
+                            ->placeholder('Nouveau mot de passe')
                             ->password()
                             ->revealable()
-                            ->required()
-                            ->autocomplete(false),
+                            ->rule(Password::default())
+                            ->autocomplete('new-password')
+                            ->dehydrated(fn ($state): bool => filled($state))
+                            ->dehydrateStateUsing(fn ($state): string => Hash::make($state)),
+                    ]),
+                Section::make('Informations du retraité')
+                    ->columns(2)
+                    ->relationship('retiree')
+                    ->visible(fn ($get) => $get('type') == UserType::Retiree->value)
+                    ->schema([
+                        TextInput::make('last_name')
+                            ->label('Nom')
+                            ->placeholder('Nom')
+                            ->required(),
+                        TextInput::make('first_name')
+                            ->label('Prénom')
+                            ->placeholder('prénom')
+                            ->required(),
+                        TextInput::make('number')
+                            ->label('Numéro d\'identification')
+                            ->placeholder('Numéro d\'identification')
+                            ->unique(ignorable: fn ($record) => $record)
+                            ->required(),
+                        DatePicker::make('birthdate')
+                            ->label('Date de naissance')
+                            ->placeholder('Date de naissance'),
+                        TextInput::make('email')
+                            ->label('Email')
+                            ->placeholder('Email'),
+                        TextInput::make('phone')
+                            ->label('Phone')
+                            ->placeholder('Phone'),
+                    ]),
+                Section::make('Informations de l\'agent')
+                    ->columns(2)
+                    ->relationship('agent')
+                    ->visible(fn ($get) => $get('type') == UserType::Agent->value)
+                    ->schema([
+                        TextInput::make('last_name')
+                            ->label('Nom')
+                            ->placeholder('Nom')
+                            ->required(),
+                        TextInput::make('first_name')
+                            ->label('Prénom')
+                            ->placeholder('prénom')
+                            ->required(),
                     ]),
             ]);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Select::configureUsing(function (Select $select) {
             $select->native(false);
+        });
+
+        DatePicker::configureUsing(function (DatePicker $picker) {
+            $picker->native(false);
         });
     }
 }
