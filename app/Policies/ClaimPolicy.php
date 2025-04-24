@@ -10,7 +10,13 @@ class ClaimPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        if ($user->type == UserType::Agent) {
+            return true;
+        } elseif ($user->type == UserType::Retiree) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -18,9 +24,7 @@ class ClaimPolicy
      */
     public function view(User $user, Claim $claim): bool
     {
-        if ($user->type == UserType::Admin) {
-            return true;
-        } elseif ($user->type == UserType::Agent) {
+        if ($user->type == UserType::Agent) {
             return true;
         } elseif ($user->type == UserType::Retiree && $claim->retiree_id == $user->retiree->id) {
             return true;
@@ -42,9 +46,7 @@ class ClaimPolicy
      */
     public function update(User $user, Claim $claim): bool
     {
-        if ($user->type == UserType::Admin) {
-            return true;
-        } elseif ($user->type == UserType::Agent) {
+        if ($user->type == UserType::Agent) {
             return true;
         }
 
@@ -56,9 +58,7 @@ class ClaimPolicy
      */
     public function delete(User $user, Claim $claim): bool
     {
-        if ($user->type == UserType::Admin) {
-            return true;
-        } elseif ($user->type == UserType::Agent) {
+        if ($user->type == UserType::Agent) {
             return true;
         }
 
